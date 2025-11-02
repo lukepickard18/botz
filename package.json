@@ -1,0 +1,25 @@
+{
+  "name": "botz",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lukepickard18/botz.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lukepickard18/botz/issues"
+  },
+  "homepage": "https://github.com/lukepickard18/botz#readme",
+  "dependencies": {
+    "discord.js": "^14.24.2",
+    "dotenv": "^17.2.3"
+  }
+}
