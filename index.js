@@ -76,8 +76,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-const app = express();
-app.get("/", (req, res) => res.send("Verification bot is running!"));
-app.listen(3001, () => console.log("Verification bot web server running"));
-
 client.login(process.env.VERIF_DISCORD_TOKEN);
