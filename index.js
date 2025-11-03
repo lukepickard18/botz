@@ -51,7 +51,12 @@ client.on(Events.GuildMemberAdd, async (member) => {
 
     const row = new ActionRowBuilder().addComponents(button);
 
-    await channel.send({ content: `<@${member.id}>`, embeds: [embed], components: [row] });
+    // ✅ Removed member ping here
+    await channel.send({ 
+      content: "Welcome! Please verify yourself using the button below.", 
+      embeds: [embed], 
+      components: [row] 
+    });
 
   } catch (err) {
     console.error("Error sending verification message:", err);
@@ -72,10 +77,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
     console.error(err);
     await interaction.reply({ content: "⚠️ Failed to assign role.", ephemeral: true });
   }
-  
+});
+
 const app = express();
 app.get("/", (req, res) => res.send("Verification bot is running!"));
 app.listen(3001, () => console.log("Verification bot web server running"));
-});
 
 client.login(process.env.VERIF_DISCORD_TOKEN);
