@@ -30,7 +30,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
     if (!channel) return console.error("❌ Verify channel not found!");
 
     const embed = new EmbedBuilder()
-  .setColor(0x2b2d31)
+  .setColor(0x41e713)
   .setTitle("👋 Welcome to Promote.Fun!")
   .setDescription(
     "<https://promote.fun/> is a platform where creators post branded content and get paid based on how many views they receive.\n\n" +
@@ -40,7 +40,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
     "• Start earning for views\n" +
     "• View active campaigns\n" +
     "• Talk with the community\n" +
-    "• Access our full resource guide"
+    "• Access our full clipping guide"
   )
 
     const button = new ButtonBuilder()
