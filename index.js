@@ -31,12 +31,12 @@ client.on(Events.GuildMemberAdd, async (member) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x2b2d31)
-      .setTitle("👋 **Welcome to Promote.Fun!**\n\n")
+      .setTitle("👋 Welcome to Promote.Fun!")
       .setDescription(
-        "Promote.fun is a platform where creators post branded content and get paid based on how many views they receive.\n\n" +
-        "You don't need any followers to get views — all you need to do is start posting.\n\n" +
-        "To get full access to the server, just click on the ✅ **Verify Me** button below.\n\n" +
-        "Once you're verified, you'll be able to:\n" +
+        "**[promote.fun](https://promote.fun/)** is a platform where creators post branded content and get paid based on how many views they receive.\n\n" +
+        "You don't need any followers to get views, all you need to do is start posting.\n\n" +
+        "To get full access to the server, just click on the **✅ Verify Me** button below.\n\n" +
+        "**Once you're verified, you'll be able to:**\n" +
         "• Start earning for views\n" +
         "• View active campaigns\n" +
         "• Talk with the community\n" +
@@ -51,9 +51,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
 
     const row = new ActionRowBuilder().addComponents(button);
 
-    // ✅ Removed member ping here
     await channel.send({ 
-      content: "Welcome! Please verify yourself using the button below.", 
       embeds: [embed], 
       components: [row] 
     });
