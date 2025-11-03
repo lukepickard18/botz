@@ -7,6 +7,7 @@ import {
   ActionRowBuilder,
   Events
 } from "discord.js";
+import express from "express";
 import dotenv from "dotenv";
 dotenv.config(); // loads combined .env
 
@@ -71,6 +72,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
     console.error(err);
     await interaction.reply({ content: "⚠️ Failed to assign role.", ephemeral: true });
   }
+  
+const app = express();
+app.get("/", (req, res) => res.send("Verification bot is running!"));
+app.listen(3001, () => console.log("Verification bot web server running"));
 });
 
 client.login(process.env.VERIF_DISCORD_TOKEN);

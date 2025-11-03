@@ -13,6 +13,7 @@ import {
   PermissionsBitField,
 } from "discord.js";
 import dotenv from "dotenv";
+import express from "express";
 dotenv.config();
 
 const client = new Client({
@@ -202,6 +203,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
       content: "✅ Ticket has been closed and moved to Closed Tickets.",
     });
   }
+  const app = express();
+  app.get("/", (req, res) => res.send("Verification bot is running!"));
+  app.listen(3001, () => console.log("Verification bot web server running"));
 });
 
 client.login(process.env.TICKET_DISCORD_TOKEN);
