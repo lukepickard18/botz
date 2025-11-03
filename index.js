@@ -42,7 +42,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
     "• Talk with the community\n" +
     "• Access our full resource guide"
   )
-  .setFooter({ text: "Verification System" });
+
     const button = new ButtonBuilder()
       .setCustomId("verify_me")
       .setLabel("✅ Verify Me")
