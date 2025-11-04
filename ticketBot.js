@@ -80,7 +80,7 @@ client.once(Events.ClientReady, async () => {
   );
 
   const embed = new EmbedBuilder()
-    .setColor(0x2b2d31)
+    .setColor(0x41e713)
     .setTitle("🎫 Need Assistance?")
     .setDescription(
       "Select a support category below to open a ticket.\n\nA staff member will review your request and respond as soon as possible."
