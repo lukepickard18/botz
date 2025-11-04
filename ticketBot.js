@@ -10,10 +10,8 @@ import {
   TextInputStyle,
   EmbedBuilder,
   Events,
-  PermissionsBitField,
 } from "discord.js";
 import dotenv from "dotenv";
-import express from "express";
 import fs from "fs";
 dotenv.config();
 
@@ -36,7 +34,21 @@ if (fs.existsSync(countFile)) {
 }
 
 const saveCount = () => {
-  fs.writeFileSync(countFile, JSON.stringify({ count: ticketCount }));
+  try {
+    fs.writeFileSync(countFile, JSON.stringify({ count: ticketCount }));
+  } catch (e) {
+    console.error("Failed to save ticket count:", e);
+  }
+};
+
+// sanitize username for channel name: lowercase, keep letters/numbers/hyphen/underscore, trim, max length
+const sanitizeName = (name) => {
+  if (!name) return "user";
+  // replace spaces with hyphens, remove other invalid chars
+  let s = name.toString().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-_]/g, "");
+  if (s.length > 20) s = s.slice(0, 20);
+  if (!s) s = "user";
+  return s;
 };
 
 client.once("ready", () => {
@@ -137,9 +149,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
     ticketCount++;
     saveCount();
 
+    // sanitize the member username for channel name
+    const sanitized = sanitizeName(interaction.user.username);
+
     // Create ticket channel under Open Tickets category
+    const ticketChannelName = `ticket-${sanitized}-${ticketCount}`;
+
     const ticketChannel = await guild.channels.create({
-      name: `ticket-${ticketCount}`,
+      name: ticketChannelName,
       type: 0, // text channel
       parent: process.env.TICKET_OPEN_CATEGORY_ID,
       permissionOverwrites: [
@@ -194,6 +211,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.isButton() && interaction.customId === "close_ticket") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
+    // Allow only support role or guild owner to close
     if (
       !member.roles.cache.has(process.env.TICKET_SUPPORT_ROLE_ID) &&
       interaction.guild.ownerId !== member.id
