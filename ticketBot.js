@@ -14,12 +14,30 @@ import {
 } from "discord.js";
 import dotenv from "dotenv";
 import express from "express";
+import fs from "fs";
 dotenv.config();
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
   partials: [Partials.Channel],
 });
+
+// Load or initialize ticket counter
+let ticketCount = 0;
+const countFile = "./ticketCount.json";
+
+if (fs.existsSync(countFile)) {
+  try {
+    const data = JSON.parse(fs.readFileSync(countFile, "utf8"));
+    ticketCount = data.count || 0;
+  } catch {
+    ticketCount = 0;
+  }
+}
+
+const saveCount = () => {
+  fs.writeFileSync(countFile, JSON.stringify({ count: ticketCount }));
+};
 
 client.once("ready", () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
@@ -34,7 +52,7 @@ client.once(Events.ClientReady, async () => {
     new ButtonBuilder()
       .setCustomId("general_support")
       .setLabel("🟢 General Support")
-      .setStyle(ButtonStyle.Primary),
+      .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId("technical_support")
       .setLabel("🔧 Technical Support")
@@ -42,15 +60,15 @@ client.once(Events.ClientReady, async () => {
     new ButtonBuilder()
       .setCustomId("payment_issues")
       .setLabel("💳 Payment Issues")
-      .setStyle(ButtonStyle.Success),
+      .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId("business_inquiries")
       .setLabel("💼 Business Inquiries")
-      .setStyle(ButtonStyle.Primary)
+      .setStyle(ButtonStyle.Secondary)
   );
 
   const embed = new EmbedBuilder()
-    .setColor(0x5865f2)
+    .setColor(0x2b2d31)
     .setTitle("🎫 Need Assistance?")
     .setDescription(
       "Select a support category below to open a ticket.\n\nA staff member will review your request and respond as soon as possible."
@@ -115,9 +133,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     const guild = await client.guilds.fetch(process.env.TICKET_GUILD_ID);
 
+    // Increment and save ticket number
+    ticketCount++;
+    saveCount();
+
     // Create ticket channel under Open Tickets category
     const ticketChannel = await guild.channels.create({
-      name: `ticket-${interaction.user.username}-${Date.now()}`,
+      name: `ticket-${ticketCount}`,
       type: 0, // text channel
       parent: process.env.TICKET_OPEN_CATEGORY_ID,
       permissionOverwrites: [
@@ -139,7 +161,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     // Embed for ticket info
     const embed = new EmbedBuilder()
       .setColor(0x2b2d31)
-      .setTitle("🎟️ New Support Ticket")
+      .setTitle(`🎟️ New Support Ticket #${ticketCount}`)
       .addFields(
         { name: "Category", value: category, inline: true },
         { name: "Promote.fun Username", value: username, inline: true },
@@ -172,7 +194,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.isButton() && interaction.customId === "close_ticket") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
-    // Allow only support role or guild owner to close
     if (
       !member.roles.cache.has(process.env.TICKET_SUPPORT_ROLE_ID) &&
       interaction.guild.ownerId !== member.id
@@ -184,17 +205,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     const ticketChannel = interaction.channel;
 
-    // Move ticket to Closed category
     await ticketChannel.setParent(process.env.TICKET_CLOSED_CATEGORY_ID);
-
-    // Lock the channel for the ticket creator
     await ticketChannel.permissionOverwrites.edit(interaction.user.id, {
       SendMessages: false,
       ViewChannel: true,
       ReadMessageHistory: true,
     });
 
-    // Notify inside the ticket
     await ticketChannel.send({
       content: `🔒 Ticket closed by ${interaction.user.tag}`,
     });
