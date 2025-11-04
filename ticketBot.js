@@ -20,14 +20,14 @@ const client = new Client({
   partials: [Partials.Channel],
 });
 
-// Load or initialize ticket counter
+// ---------------- GLOBAL TICKET COUNTER ----------------
 let ticketCount = 0;
 const countFile = "./ticketCount.json";
 
 if (fs.existsSync(countFile)) {
   try {
     const data = JSON.parse(fs.readFileSync(countFile, "utf8"));
-    ticketCount = data.count || 0;
+    ticketCount = data.globalCount || 0;
   } catch {
     ticketCount = 0;
   }
@@ -35,16 +35,15 @@ if (fs.existsSync(countFile)) {
 
 const saveCount = () => {
   try {
-    fs.writeFileSync(countFile, JSON.stringify({ count: ticketCount }));
+    fs.writeFileSync(countFile, JSON.stringify({ globalCount: ticketCount }));
   } catch (e) {
-    console.error("Failed to save ticket count:", e);
+    console.error("Failed to save global ticket count:", e);
   }
 };
 
-// sanitize username for channel name: lowercase, keep letters/numbers/hyphen/underscore, trim, max length
+// sanitize username for channel name
 const sanitizeName = (name) => {
   if (!name) return "user";
-  // replace spaces with hyphens, remove other invalid chars
   let s = name.toString().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-_]/g, "");
   if (s.length > 20) s = s.slice(0, 20);
   if (!s) s = "user";
@@ -55,7 +54,7 @@ client.once("ready", () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
-// Send ticket buttons in support channel
+// ---------------- SEND SUPPORT BUTTONS ----------------
 client.once(Events.ClientReady, async () => {
   const guild = await client.guilds.fetch(process.env.TICKET_GUILD_ID);
   const channel = await guild.channels.fetch(process.env.TICKET_SUPPORT_CHANNEL_ID);
@@ -91,7 +90,7 @@ client.once(Events.ClientReady, async () => {
   await channel.send({ embeds: [embed], components: [row] });
 });
 
-// Interaction handler
+// ---------------- INTERACTIONS ----------------
 client.on(Events.InteractionCreate, async (interaction) => {
   // --- Open ticket modal ---
   if (interaction.isButton() && interaction.customId !== "close_ticket") {
@@ -145,19 +144,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     const guild = await client.guilds.fetch(process.env.TICKET_GUILD_ID);
 
-    // Increment and save ticket number
+    // Increment global ticket number (shared across all users)
     ticketCount++;
     saveCount();
 
-    // sanitize the member username for channel name
     const sanitized = sanitizeName(interaction.user.username);
-
-    // Create ticket channel under Open Tickets category
     const ticketChannelName = `ticket-${sanitized}-${ticketCount}`;
 
     const ticketChannel = await guild.channels.create({
       name: ticketChannelName,
-      type: 0, // text channel
+      type: 0,
       parent: process.env.TICKET_OPEN_CATEGORY_ID,
       permissionOverwrites: [
         {
@@ -175,7 +171,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       ],
     });
 
-    // Embed for ticket info
     const embed = new EmbedBuilder()
       .setColor(0x41e713)
       .setTitle(`🎟️ New Support Ticket #${ticketCount}`)
@@ -187,7 +182,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       .setFooter({ text: `Submitted by ${interaction.user.tag}` })
       .setTimestamp();
 
-    // Close ticket button
     const closeRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("close_ticket")
@@ -211,7 +205,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.isButton() && interaction.customId === "close_ticket") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
-    // Allow only support role or guild owner to close
     if (
       !member.roles.cache.has(process.env.TICKET_SUPPORT_ROLE_ID) &&
       interaction.guild.ownerId !== member.id
@@ -220,7 +213,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
 
     await interaction.deferReply({ ephemeral: true });
-
     const ticketChannel = interaction.channel;
 
     await ticketChannel.setParent(process.env.TICKET_CLOSED_CATEGORY_ID);
