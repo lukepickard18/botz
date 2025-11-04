@@ -177,7 +177,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     // Embed for ticket info
     const embed = new EmbedBuilder()
-      .setColor(0x2b2d31)
+      .setColor(0x41e713)
       .setTitle(`🎟️ New Support Ticket #${ticketCount}`)
       .addFields(
         { name: "Category", value: category, inline: true },
